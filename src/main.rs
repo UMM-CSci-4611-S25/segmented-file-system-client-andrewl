@@ -9,6 +9,7 @@ use std::{
     net::UdpSocket,
     ffi:: OsString, // Storing OS-compatible filenames
     convert::TryFrom, // Implement TryFrom trait for Packet
+    collections::HashMap, // HashMap for storing file packets
 };
 
 enum Packet {
@@ -32,13 +33,63 @@ struct Data {
 }
 
 #[derive(Debug)]
-pub struct PacketParseError {
+pub  struct PacketParseError {
     message: String,
 }
 
 impl TryFrom<&[u8]> for Packet {
     type Error = PacketParseError;
+
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+        if bytes.len() < 2 {
+            return Err(PacketParseError {
+                message: "Packet too short".to_string(),
+            });
+        }
+
+        let status = bytes[0]; // First byte is status byte
+        let file_id = bytes[1]; // Second byte is file ID
+
+        if status % 2 == 0 {
+            // Header packet case
+            let file_name = String::from_utf8(bytes[2..].to_vec())
+                .map_err(|_| PacketParseError {
+                    message: "Invalid UTF-8 sequence".to_string()})?;
+
+            Ok(Packet::Header(Header {
+                file_id,
+                file_name: OsString::from(file_name),
+            }))
+            } else {
+                // Data packet case
+                if bytes.len() < 4 {
+                    return Err(PacketParseError {
+                        message: "Data packet too short".to_string(),
+                    });
+                }
+
+                let packet_number = u16::from_be_bytes([bytes[2], bytes[3]]); // Parse 2 byte big endian packet num
+                let is_last_packet = status % 4 == 3; // check last packet if status % 4 = = 3 
+                let data = bytes[4..].to_vec(); // data content
+                Ok(Packet::Data(Data {
+                    file_id,
+                    packet_number,
+                    is_last_packet,
+                    data,
+                }))
+            }
+        }
+    }
+
+// Manage and store files into disk
+#[derive(Default)]
+struct FileManager {
+    files: HashMap<u8, (Option<OsString>, Option<u16>, HashMap<u16, Vec<u8>>)>, // Mpas file ID to PacketGroup
 }
+
+
+
+
 
 
 
