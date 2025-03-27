@@ -1,18 +1,47 @@
-fn main() {
-    println!("Hello, world!");
-}
-
 // Below is a version of the `main` function and some error types. This assumes
 // the existence of types like `FileManager`, `Packet`, and `PacketParseError`.
 // You can use this code as a starting point for the exercise, or you can
 // delete it and write your own code with the same function signature.
 
-/*
 
 use std::{
     io::{self, Write},
     net::UdpSocket,
+    ffi:: OsString, // Storing OS-compatible filenames
+    convert::TryFrom, // Implement TryFrom trait for Packet
 };
+
+enum Packet {
+    // Define the packet structure here
+    Header (Header), // header packet with file name
+    Data (Data), // data packet with file content
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct Header {
+    file_id: u8,
+    file_name: OsString,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct Data {
+    file_id: u8,
+    packet_number: u16,
+    is_last_packet: bool,
+    data: Vec<u8>, // file content
+}
+
+#[derive(Debug)]
+pub struct PacketParseError {
+    message: String,
+}
+
+impl TryFrom<&[u8]> for Packet {
+    type Error = PacketParseError;
+}
+
+
+
 
 #[derive(Debug)]
 pub enum ClientError {
@@ -56,4 +85,4 @@ fn main() -> Result<(), ClientError> {
     Ok(())
 }
 
- */
+
