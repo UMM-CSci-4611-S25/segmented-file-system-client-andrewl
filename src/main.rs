@@ -186,3 +186,19 @@ fn main() -> Result<(), ClientError> {
 
     Ok(())
 }
+
+// Set up 
+// mkdir ../testFiles
+// copy tests\target-files\*.txt ..\testFiles\
+// copy tests\target-files\*.jpg ..\testFiles\
+
+// Run java server
+// java -jar tests/lib/Segmented-File-System-server.jar
+
+// Run cargo run
+// cargo run
+
+// Comparing files with target-files
+// Compare-Object (Get-Content small.txt) (Get-Content tests/target-files/small.txt)
+// Compare-Object (Get-Content AsYouLikeIt.txt) (Get-Content tests/target-files/AsYouLikeIt.txt)
+// cmd /c "fc /b binary.jpg tests/target-files/binary.jpg"
